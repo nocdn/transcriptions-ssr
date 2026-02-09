@@ -474,7 +474,7 @@ export default function TranscriptionWidget() {
                               </p>
                             </div>
                             <p
-                              className="cursor-pointer font-sans text-sm antialiased transition-opacity hover:opacity-70"
+                              className="cursor-pointer font-sans text-sm antialiased transition-opacity"
                               onMouseDown={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
