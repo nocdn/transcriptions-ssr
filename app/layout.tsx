@@ -31,6 +31,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   "use cache"
+  cacheLife("max")
   return (
     <html lang="en">
       <body
