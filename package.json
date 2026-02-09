@@ -10,9 +10,11 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "class-variance-authority": "latest",
     "clsx": "latest",
-    "lucide-react": "latest",
+    "lucide-react": "^0.563.0",
+    "motion": "^12.33.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
