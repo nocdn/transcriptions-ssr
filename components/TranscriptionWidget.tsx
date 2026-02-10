@@ -4,7 +4,7 @@ import { deleteHistoryItem, fetchHistory, transcribeAudio } from "@/app/actions"
 import { AnimatedCircularButton } from "@/components/AnimatedButton"
 import DropZone from "@/components/DropZone"
 import AudioIcon from "@/components/icons/audio"
-import { ArrowLeft, Check, Copy, Gauge, Loader, RefreshCw, X } from "lucide-react"
+import { ArrowLeft, Check, Copy, Gauge, Loader, OctagonAlert, RefreshCw, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { useCallback, useRef, useState } from "react"
 
@@ -21,6 +21,7 @@ export default function TranscriptionWidget() {
   const [copiedMessage, setCopiedMessage] = useState(false)
   const [isRateLimited, setIsRateLimited] = useState(false)
   const [sizeExceeded, setSizeExceeded] = useState(false)
+  const [noTranscription, setNoTranscription] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [micError, setMicError] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
@@ -248,6 +249,7 @@ export default function TranscriptionWidget() {
 
     if (result.error || !result.transcription) {
       console.error("Transcription error:", result.error)
+      setNoTranscription(true)
       setStage("initial")
       return
     }
@@ -312,7 +314,7 @@ export default function TranscriptionWidget() {
         </AnimatePresence>
         <DropZone onClick={handleClick} onDropped={(f) => handleFile(f, f.name)} stage={stage}>
           {(() => {
-            if (isRateLimited || sizeExceeded) {
+            if (isRateLimited || sizeExceeded || noTranscription) {
               return (
                 <div
                   className="motion-preset-focus-sm flex flex-col items-center p-8 text-red-600"
@@ -321,14 +323,23 @@ export default function TranscriptionWidget() {
                     e.stopPropagation()
                     setSizeExceeded(false)
                     setIsRateLimited(false)
+                    setNoTranscription(false)
                   }}
                 >
-                  <Gauge size={18} className="mb-3" />
+                  {noTranscription ? (
+                    <OctagonAlert size={18} className="mb-3" />
+                  ) : (
+                    <Gauge size={18} className="mb-3" />
+                  )}
                   <p className="font-jetbrains-mono text-sm">
-                    {sizeExceeded ? "File too large" : "rate limited"}
+                    {sizeExceeded
+                      ? "File too large"
+                      : noTranscription
+                        ? "No transcription"
+                        : "Rate limited"}
                   </p>
-                  <p className="font-jetbrains-mono mt-1 text-[13px] opacity-60">
-                    {sizeExceeded ? "Max 100MB" : "try again later"}
+                  <p className="font-jetbrains-mono mt-1 cursor-pointer text-[13px] opacity-60 transition-opacity hover:opacity-85">
+                    {sizeExceeded ? "Max 100MB" : noTranscription ? "Try again" : "Try again later"}
                   </p>
                 </div>
               )
@@ -374,7 +385,10 @@ export default function TranscriptionWidget() {
                     >
                       Show History
                       {isLoadingHistory && (
-                        <Loader size={12} className="absolute top-0.5 -right-5 animate-spin" />
+                        <Loader
+                          size={12}
+                          className="absolute top-1/2 -right-5 -translate-y-1/2 animate-spin"
+                        />
                       )}
                     </p>
                   </div>
@@ -442,7 +456,7 @@ export default function TranscriptionWidget() {
                             <div className="flex items-center justify-between">
                               <div className="relative select-none">
                                 <p
-                                  className="font-sans text-sm font-medium text-gray-500/80 antialiased"
+                                  className="font-sans text-sm font-medium text-gray-700 antialiased"
                                   onMouseDown={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
@@ -461,7 +475,8 @@ export default function TranscriptionWidget() {
                                   {isDeleting && (
                                     <Loader
                                       size={11}
-                                      className="ml-1.5 inline animate-spin text-red-600"
+                                      strokeWidth={2.5}
+                                      className="ml-1.5 inline -translate-y-[1.5px] animate-spin text-red-600"
                                     />
                                   )}
                                 </p>
