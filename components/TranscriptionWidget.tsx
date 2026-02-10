@@ -219,7 +219,20 @@ export default function TranscriptionWidget() {
     formData.append("file", file)
     formData.append("source", source || file.name || "upload")
 
-    const result = await transcribeAudio(formData)
+    let result
+    try {
+      result = await transcribeAudio(formData)
+    } catch (err: any) {
+      const msg = typeof err?.message === "string" ? err.message : ""
+      if (msg.includes("413") || msg.toLowerCase().includes("body exceeded")) {
+        setSizeExceeded(true)
+        setStage("initial")
+        return
+      }
+      console.error("Transcription request failed:", err)
+      setStage("initial")
+      return
+    }
 
     if (result.rateLimited) {
       setIsRateLimited(true)
