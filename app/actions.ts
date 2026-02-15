@@ -9,6 +9,7 @@ import {
 export async function transcribeAudio(formData: FormData) {
   const file = formData.get("file") as File | null
   const source = (formData.get("source") as string) || "upload"
+  const model = (formData.get("model") as string) || "mistral"
 
   if (!file) {
     return { error: "No file provided" }
@@ -18,25 +19,46 @@ export async function transcribeAudio(formData: FormData) {
     return { error: "File too large", sizeExceeded: true }
   }
 
-  const apiKey = process.env.MISTRAL_API_KEY
-  if (!apiKey) {
-    return { error: "MISTRAL_API_KEY not configured" }
-  }
+  let response: Response
 
-  const mistralForm = new FormData()
-  mistralForm.append("model", "voxtral-mini-latest")
-  mistralForm.append("file", file)
+  if (model === "scribe") {
+    const apiKey = process.env.ELEVENLABS_API_KEY
+    if (!apiKey) {
+      return { error: "ELEVENLABS_API_KEY not configured" }
+    }
 
-  const response = await fetch(
-    "https://api.mistral.ai/v1/audio/transcriptions",
-    {
+    const scribeForm = new FormData()
+    scribeForm.append("model_id", "scribe_v2")
+    scribeForm.append("file", file)
+
+    response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        "xi-api-key": apiKey,
       },
-      body: mistralForm,
-    },
-  )
+      body: scribeForm,
+    })
+  } else {
+    const apiKey = process.env.MISTRAL_API_KEY
+    if (!apiKey) {
+      return { error: "MISTRAL_API_KEY not configured" }
+    }
+
+    const mistralForm = new FormData()
+    mistralForm.append("model", "voxtral-mini-latest")
+    mistralForm.append("file", file)
+
+    response = await fetch(
+      "https://api.mistral.ai/v1/audio/transcriptions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: mistralForm,
+      },
+    )
+  }
 
   if (response.status === 429) {
     return { error: "Rate limited", rateLimited: true }
@@ -47,7 +69,7 @@ export async function transcribeAudio(formData: FormData) {
     try {
       text = await response.text()
     } catch {}
-    console.error("Mistral transcription failed:", response.status, text)
+    console.error(`${model === "scribe" ? "ElevenLabs" : "Mistral"} transcription failed:`, response.status, text)
     return { error: "Transcription failed" }
   }
 

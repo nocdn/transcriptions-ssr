@@ -4,6 +4,7 @@ import { deleteHistoryItem, fetchHistory, transcribeAudio } from "@/app/actions"
 import { AnimatedCircularButton } from "@/components/AnimatedButton"
 import DropZone from "@/components/DropZone"
 import AudioIcon from "@/components/icons/audio"
+import ElevenLabsIcon from "@/components/icons/elevenlabs"
 import { ArrowLeft, Check, Copy, Gauge, Loader, OctagonAlert, RefreshCw, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { useCallback, useRef, useState } from "react"
@@ -27,6 +28,7 @@ export default function TranscriptionWidget() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [useScribe, setUseScribe] = useState(false)
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -219,6 +221,7 @@ export default function TranscriptionWidget() {
     const formData = new FormData()
     formData.append("file", file)
     formData.append("source", source || file.name || "upload")
+    if (useScribe) formData.append("model", "scribe")
 
     let result
     try {
@@ -332,14 +335,14 @@ export default function TranscriptionWidget() {
                     <Gauge size={18} className="mb-3" />
                   )}
                   <p className="font-jetbrains-mono text-base sm:text-sm">
-                  {sizeExceeded
-                    ? "File too large"
-                    : noTranscription
-                      ? "No transcription"
-                      : "Rate limited"}
+                    {sizeExceeded
+                      ? "File too large"
+                      : noTranscription
+                        ? "No transcription"
+                        : "Rate limited"}
                   </p>
                   <p className="font-jetbrains-mono mt-1 cursor-pointer text-[15px] opacity-60 transition-opacity hover:opacity-85 sm:text-[13px]">
-                  {sizeExceeded ? "Max 100MB" : noTranscription ? "Try again" : "Try again later"}
+                    {sizeExceeded ? "Max 100MB" : noTranscription ? "Try again" : "Try again later"}
                   </p>
                 </div>
               )
@@ -392,6 +395,18 @@ export default function TranscriptionWidget() {
                         />
                       )}
                     </button>
+                    {/* <button
+                      type="button"
+                      className={`font-ioskeley-mono border-shadow relative mt-3 inline-flex cursor-pointer items-center rounded-full px-[18px] py-1.5 text-[14.25px] transition-opacity sm:text-[13px] ${useScribe ? "border border-blue-200 bg-blue-50/50 text-blue-700 opacity-100" : "text-gray-700 opacity-70 hover:text-blue-700 hover:opacity-100"}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setUseScribe((v) => !v)
+                      }}
+                    >
+                      <ElevenLabsIcon size={14} className="-ml-0.5 mr-1.5" />
+                      Scribe
+                    </button> */}
                   </div>
                 )
               } else if (stage === "processing") {
@@ -399,6 +414,11 @@ export default function TranscriptionWidget() {
                   <div className="motion-preset-focus-sm flex flex-col items-center p-8 text-blue-600">
                     <Loader size={18} className="mb-3 animate-spin" />
                     <p className="font-jetbrains-mono text-base sm:text-sm">Transcribing</p>
+                    {useScribe && (
+                      <p className="font-jetbrains-mono mt-1 text-base opacity-60 sm:text-sm">
+                        Scribe v2
+                      </p>
+                    )}
                   </div>
                 )
               } else if (stage === "done") {
@@ -424,7 +444,8 @@ export default function TranscriptionWidget() {
                           setStage("initial")
                         }}
                       >
-                        <ArrowLeft size={15} strokeWidth={2.25} className="translate-y-[0.75px]" /> Back
+                        <ArrowLeft size={15} strokeWidth={2.25} className="translate-y-[0.75px]" />{" "}
+                        Back
                       </p>
                       <AnimatedCircularButton
                         ariaLabel="Refresh history"
@@ -432,7 +453,10 @@ export default function TranscriptionWidget() {
                           loadHistory()
                         }}
                         secondaryChildren={
-                          <Loader size={16} className="h-[18px] w-[18px] animate-spin sm:h-4 sm:w-4" />
+                          <Loader
+                            size={16}
+                            className="h-[18px] w-[18px] animate-spin sm:h-4 sm:w-4"
+                          />
                         }
                         className="translate-x-[9px] -translate-y-px sm:translate-x-2.5 sm:-translate-y-0.5"
                       >
