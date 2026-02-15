@@ -198,7 +198,7 @@ export default function TranscriptionWidget() {
     if (transcriptionText !== "") return
     const input = document.createElement("input")
     input.type = "file"
-    input.accept = "audio/*"
+    input.accept = "audio/*,.m4a,.mp3,.wav,.ogg,.flac,.aac,.wma,.webm,.opus,.aiff,.aif"
     input.onchange = (event: any) => {
       const file = event.target.files?.[0]
       if (file) {
@@ -331,15 +331,15 @@ export default function TranscriptionWidget() {
                   ) : (
                     <Gauge size={18} className="mb-3" />
                   )}
-                  <p className="font-jetbrains-mono text-sm">
-                    {sizeExceeded
-                      ? "File too large"
-                      : noTranscription
-                        ? "No transcription"
-                        : "Rate limited"}
+                  <p className="font-jetbrains-mono text-base sm:text-sm">
+                  {sizeExceeded
+                    ? "File too large"
+                    : noTranscription
+                      ? "No transcription"
+                      : "Rate limited"}
                   </p>
-                  <p className="font-jetbrains-mono mt-1 cursor-pointer text-[13px] opacity-60 transition-opacity hover:opacity-85">
-                    {sizeExceeded ? "Max 100MB" : noTranscription ? "Try again" : "Try again later"}
+                  <p className="font-jetbrains-mono mt-1 cursor-pointer text-[15px] opacity-60 transition-opacity hover:opacity-85 sm:text-[13px]">
+                  {sizeExceeded ? "Max 100MB" : noTranscription ? "Try again" : "Try again later"}
                   </p>
                 </div>
               )
@@ -372,11 +372,12 @@ export default function TranscriptionWidget() {
                     >
                       <AudioIcon size={18} />
                     </AnimatedCircularButton>
-                    <p className="font-sans text-sm font-medium antialiased">
+                    <p className="font-sans text-base font-medium antialiased sm:text-sm">
                       Drop an audio file here
                     </p>
-                    <p
-                      className="font-jetbrains-mono relative mt-0.5 cursor-pointer text-sm opacity-60 transition-opacity hover:text-blue-600 hover:opacity-80"
+                    <button
+                      type="button"
+                      className="font-ioskeley-mono border-shadow relative mt-3 inline-flex cursor-pointer items-center rounded-full px-[18px] py-1.5 text-[14.25px] text-gray-700 opacity-70 transition-opacity hover:text-blue-700 hover:opacity-100 sm:text-[13px]"
                       onMouseDown={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
@@ -390,14 +391,14 @@ export default function TranscriptionWidget() {
                           className="absolute top-1/2 -right-5 -translate-y-1/2 animate-spin"
                         />
                       )}
-                    </p>
+                    </button>
                   </div>
                 )
               } else if (stage === "processing") {
                 return (
                   <div className="motion-preset-focus-sm flex flex-col items-center p-8 text-blue-600">
                     <Loader size={18} className="mb-3 animate-spin" />
-                    <p className="font-jetbrains-mono text-sm">Transcribing</p>
+                    <p className="font-jetbrains-mono text-base sm:text-sm">Transcribing</p>
                   </div>
                 )
               } else if (stage === "done") {
@@ -411,29 +412,31 @@ export default function TranscriptionWidget() {
               } else if (stage === "history") {
                 return (
                   <div
-                    className="flex w-96 flex-col gap-5 px-1 pt-1 pb-3"
+                    className="flex w-full max-w-[90vw] flex-col gap-3 px-1 pt-1 pb-3 sm:max-w-md"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-between">
                       <p
-                        className="flex cursor-pointer items-center gap-2 font-sans text-sm font-medium antialiased"
+                        className="flex cursor-pointer items-center gap-1.5 font-sans text-base font-medium antialiased sm:text-sm"
                         onMouseDown={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
                           setStage("initial")
                         }}
                       >
-                        <ArrowLeft size={15} /> Back
+                        <ArrowLeft size={15} strokeWidth={2.25} className="translate-y-[0.75px]" /> Back
                       </p>
                       <AnimatedCircularButton
                         ariaLabel="Refresh history"
                         onMouseDown={() => {
                           loadHistory()
                         }}
-                        secondaryChildren={<Loader size={16} className="animate-spin" />}
-                        className="translate-x-2.5 -translate-y-0.5"
+                        secondaryChildren={
+                          <Loader size={16} className="h-[18px] w-[18px] animate-spin sm:h-4 sm:w-4" />
+                        }
+                        className="translate-x-[9px] -translate-y-px sm:translate-x-2.5 sm:-translate-y-0.5"
                       >
-                        <RefreshCw size={16} />
+                        <RefreshCw size={16} className="h-[18px] w-[18px] sm:h-4 sm:w-4" />
                       </AnimatedCircularButton>
                     </div>
                     <div className="flex max-h-192 flex-col gap-4 overflow-y-auto">
@@ -443,7 +446,7 @@ export default function TranscriptionWidget() {
                         </div>
                       )}
                       {!isLoadingHistory && history.length === 0 && (
-                        <p className="font-jetbrains-mono py-8 text-center text-sm text-gray-400">
+                        <p className="font-jetbrains-mono py-8 text-center text-base text-gray-400 sm:text-sm">
                           No transcriptions yet
                         </p>
                       )}
